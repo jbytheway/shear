@@ -54,7 +54,11 @@ BOOST_AUTO_TEST_CASE(arithmetic_grammar)
   >::type grammar_type;
   // Construct the grammar
   grammar_type arithmetic_grammar;
-  arithmetic_grammar.check();
+  try {
+    arithmetic_grammar.check();
+  } catch (sh::grammar_exception& e) {
+    BOOST_ERROR(std::string("grammar exception: ") + e.what());
+  }
 #if 0
   // The parser type is similarly horrible, but obtainable from the grammar
   // type so we don't need to express all that stuff again.

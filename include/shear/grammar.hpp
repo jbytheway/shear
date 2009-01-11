@@ -6,6 +6,8 @@
 #include <queue>
 
 #include <boost/mpl/for_each.hpp>
+#include <boost/mpl/assert.hpp>
+#include <boost/mpl/has_key.hpp>
 #include <boost/foreach.hpp>
 #include <boost/spirit/home/phoenix/core/reference.hpp>
 #include <boost/spirit/home/phoenix/object/construct.hpp>
@@ -29,17 +31,28 @@ template<
 >
 class grammar :
   public compiletime::grammar_base<RootSymbol, Tokens, Productions> {
+  BOOST_MPL_ASSERT((
+        typename mpl::has_key<
+          typename grammar::non_terminals, typename grammar::root
+        >::type
+      ));
   public:
     typedef size_t symbol_index_type;
     static const symbol_index_type num_symbols =
       mpl::size<typename grammar::symbol_index_vector>::type::value;
+    typedef typename mpl::at<
+        typename grammar::symbol_index_map,
+        typename grammar::root
+      >::type root_index;
 
     grammar();
 
-    void check();
-    void check_for_loops();
-    void check_for_non_productive_non_terminals();
-    void check_for_non_reachable_non_terminals();
+    void check() throw(grammar_exception&);
+    void check_for_loops() throw(grammar_loop_exception&);
+    void check_for_non_productive_non_terminals()
+      throw(non_productive_non_terminals_exception&);
+    void check_for_non_reachable_non_terminals()
+      throw(non_reachable_non_terminals_exception&);
   private:
     typedef boost::multi_index_container<
       runtime::production::ptr,
@@ -88,7 +101,10 @@ grammar<R, T, P>::grammar()
     mpl::at<typename grammar::symbol_index_map, mpl::_1>
   >(px::insert(
         px::ref(non_terminals_r_),
-        px::construct<runtime::non_terminal>(arg1, px::cref(productions_r_))
+        px::construct<runtime::non_terminal>(
+          arg1, px::cref(productions_r_),
+          typename grammar::symbol_index_vector()
+        )
       ));
   // Determine which symbols produce empty
   bool altered;
@@ -118,7 +134,7 @@ grammar<R, T, P>::grammar()
 }
 
 template<typename R, typename T, typename P>
-void grammar<R, T, P>::check()
+void grammar<R, T, P>::check() throw(grammar_exception&)
 {
   check_for_loops();
   check_for_non_productive_non_terminals();
@@ -126,7 +142,7 @@ void grammar<R, T, P>::check()
 }
 
 template<typename R, typename T, typename P>
-void grammar<R, T, P>::check_for_loops()
+void grammar<R, T, P>::check_for_loops() throw(grammar_loop_exception&)
 {
   BOOST_FOREACH(const runtime::non_terminal& checking_non_terminal,
       non_terminals_r_) {
@@ -156,7 +172,7 @@ void grammar<R, T, P>::check_for_loops()
 
         BOOST_FOREACH(symbol_index_type symbol_index, production->produced()) {
           NonTerminalMap::iterator symbol = non_terminals_r_.find(symbol_index);
-          if (symbol != non_terminals_r_.end() && !symbol->produces_empty())
+          if (symbol == non_terminals_r_.end() || !symbol->produces_empty())
           {
             last_compulsory_symbol = &*symbol;
             ++min_length;
@@ -192,19 +208,94 @@ void grammar<R, T, P>::check_for_loops()
       }
     }
   }
-
 }
 
 template<typename R, typename T, typename P>
 void grammar<R, T, P>::check_for_non_productive_non_terminals()
+  throw(non_productive_non_terminals_exception&)
 {
-  // TODO:
+  // Create a collection of all productive non-terminals
+  std::set<symbol_index_type> productive_non_terminals;
+  
+  // Repeatedly search through all non-terminals looking for new ones
+  // to add to the collection
+  size_t num_productive_non_terminals;
+  do {
+    num_productive_non_terminals = productive_non_terminals.size();
+    
+    BOOST_FOREACH(const runtime::non_terminal& non_terminal, non_terminals_r_)
+    {
+      if (productive_non_terminals.count(non_terminal.index()))
+        continue;
+      BOOST_FOREACH(const runtime::production::ptr& production,
+          non_terminal.productions()) {
+        bool productiveProduction = true;
+        BOOST_FOREACH(symbol_index_type symbol_index, production->produced()) {
+          if (non_terminals_r_.count(symbol_index) &&
+              !productive_non_terminals.count(symbol_index)) {
+            productiveProduction = false;
+            break;
+          }
+        }
+        if (productiveProduction) {
+          productive_non_terminals.insert(non_terminal.index());
+          break;
+        }
+      }
+    }
+  } while (productive_non_terminals.size() > num_productive_non_terminals);
+  
+  if (num_productive_non_terminals < non_terminals_r_.size()) {
+    std::set<runtime::non_terminal> non_productive_non_terminals;
+    
+    BOOST_FOREACH(const runtime::non_terminal& non_terminal, non_terminals_r_)
+      if (!productive_non_terminals.count(non_terminal.index()))
+        non_productive_non_terminals.insert(non_terminal);
+    
+    throw non_productive_non_terminals_exception(non_productive_non_terminals);
+  }
 }
 
 template<typename R, typename T, typename P>
 void grammar<R, T, P>::check_for_non_reachable_non_terminals()
+  throw(non_reachable_non_terminals_exception&)
 {
-  // TODO:
+  // Create a collection of all reachable non-terminals
+  std::set<symbol_index_type> reachable_non_terminals;
+  reachable_non_terminals.insert(root_index::value);
+  std::queue<symbol_index_type> non_terminals_to_process;
+  non_terminals_to_process.push(root_index::value);
+  
+  // Process everything in the Queue until nothing is left
+  while (!non_terminals_to_process.empty())
+  {
+    symbol_index_type to_process = non_terminals_to_process.front();
+    non_terminals_to_process.pop();
+    
+    BOOST_FOREACH(const runtime::production::ptr& production,
+          non_terminals_r_.find(to_process)->productions()) {
+      BOOST_FOREACH(symbol_index_type symbol_index, production->produced()) {
+        if (non_terminals_r_.count(symbol_index)) {
+          if (!reachable_non_terminals.count(symbol_index))
+          {
+            reachable_non_terminals.insert(symbol_index);
+            non_terminals_to_process.push(symbol_index);
+          }
+        }
+      }
+    }
+  }
+  
+  if (reachable_non_terminals.size() < non_terminals_r_.size())
+  {
+    std::set<symbol_index_type> non_reachable_non_terminals;
+    
+    BOOST_FOREACH(const runtime::non_terminal& non_terminal, non_terminals_r_)
+      if (!reachable_non_terminals.count(non_terminal.index()))
+        non_reachable_non_terminals.insert(non_terminal.index());
+    
+    throw non_reachable_non_terminals_exception(non_reachable_non_terminals);
+  }
 }
 
 }
