@@ -1,41 +1,56 @@
+#include <boost/scoped_ptr.hpp>
+
+#include <shear/make_grammar.hpp>
+#include <shear/production.hpp>
+
 namespace sh = shear;
+namespace mpl = boost::mpl;
 
 class X {};
 class PLUS {};
 
 class expression {
   public:
-    expression(const X&) : is_x_(true), sub_() {}
-    expression(const expression& e, const X&) :
-      is_x_(false), sub_(new expression(e))
-    {}
+    expression(const X&) : sub_() {}
+    expression(const expression& e, const X&) : sub_(new expression(e)) {}
 
-    bool is_x() const { return is_x_; }
-    const expression& subexpression() const { assert(is_x_); return *sub_(); }
+    bool is_x() const { return !sub_; }
+    const expression& subexpression() const { return *sub_; }
   private:
-    bool is_x_;
+    expression(const expression& copy) {
+      if (copy.sub_) {
+        sub_.reset(new expression(*copy.sub_));
+      }
+    }
     boost::scoped_ptr<expression> sub_;
 };
 
 int main()
 {
-  // For the type of the grammar we need to specify the root symbol and all the
-  // tokens.  Even so, this type will be abstract (the concrete type also needs
-  // to encoude all the productions)
-  typedef sh::grammar_using<expression, X, PLUS>::type grammar_type;
-  // Construct the grammar; following everyone else we use a BNF-alike in C++
-  grammar_type& arithmetic_grammar = sh::make_grammar[
-    sh::token<X>(),
-    sh::token<PLUS>(),
-    sh::symbol<expression>()
-      = sh::ref<X>()
-      = sh::ref<expression>() << sh::discard<PLUS>() << sh::ref<X>()
-  ];
-  // The parser type similarly depends on the root symbol and tokens, and is
-  // similarly abstract, but obtainable from the grammar type so we don't need
-  // to express all that stuff again.
+  // The type of the grammar incorporates pretty much everything required for
+  // it (an unfortunate almost-necessity; runtime polymorphism opens far too
+  // many worm cans.  With the aid of decltype we could
+  // provide an alternate more BNF-ish syntax a la spirit, but this works with
+  // C++03)
+  typedef sh::make_grammar<
+    // root symbol
+    expression,
+    // tokens
+    mpl::vector<X, PLUS>::type,
+    // productions
+    mpl::vector<
+      sh::production<expression, X>,
+      sh::production<expression, sh::discard<PLUS>, X>
+    >::type
+  >::type grammar_type;
+  // Construct the grammar
+  grammar_type arithmetic_grammar;
+  static_cast<void>(arithmetic_grammar);
+#if 0
+  // The parser type is similarly horrible, but obtainable from the grammar
+  // type so we don't need to express all that stuff again.
   typedef sh::result_of::make_lalr_parser<grammar_type>::type parser_type;
-  parser_type& arithmetic_parser =
+  parser_type arithmetic_parser =
     sh::make_lalr_parser(arithmetic_grammar);
   // Tokens passed in to the parser one by one
   arithmetic_parser.handle_token(X())
@@ -51,5 +66,6 @@ int main()
   // Check it constructed the right things
   assert(!expression.is_x());
   assert(expression.subexpression().is_x());
+#endif
 }
 
