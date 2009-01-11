@@ -1,4 +1,4 @@
-namespace shear::detail {
+namespace shear::compiletime {
 
 using mpl::map;
 using mpl::pair;

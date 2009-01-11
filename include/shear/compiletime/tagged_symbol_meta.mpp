@@ -1,0 +1,10 @@
+namespace shear::compiletime
+{
+
+concept TaggedSymbol {
+  Symbol get_symbol() "shear/compiletime/tagged_symbol.hpp";
+  argument_tag get_tag() "shear/compiletime/tagged_symbol.hpp";
+}
+
+}
+

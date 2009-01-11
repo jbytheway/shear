@@ -2,30 +2,30 @@ namespace shear {
 
 metatype production_s {
   constructor(
-      detail::NonTerminal s,
-      mpl::Sequence<detail::TaggedSymbol> produced_with_tags
+      compiletime::NonTerminal s,
+      mpl::Sequence<compiletime::TaggedSymbol> produced_with_tags
     ) :
     source(s),
     produced(
       mpl::transform(
         produced_with_tags,
-        lambda(detail::TaggedSymbol) { _1.get_symbol() },
-        detail::vector_inserter<detail::Symbol>()
+        lambda(compiletime::TaggedSymbol) { _1.get_symbol() },
+        compiletime::vector_inserter<compiletime::Symbol>()
       )
     ),
     argument_tags(
       mpl::transform(
         produced_with_tags,
-        lambda(detail::TaggedSymbol) { _1.get_tag() },
-        detail::vector_inserter<detail::argument_tag>()
+        lambda(compiletime::TaggedSymbol) { _1.get_tag() },
+        compiletime::vector_inserter<compiletime::argument_tag>()
       )
     ),
     ;
-  detail::NonTerminal source;
-  mpl::vector<detail::Symbol> produced;
-  mpl::vector<detail::argument_tag> argument_tags;
+  compiletime::NonTerminal source;
+  mpl::vector<compiletime::Symbol> produced;
+  mpl::vector<compiletime::argument_tag> argument_tags;
 
-  detail::NonTerminal get_source() { return source; }
+  compiletime::NonTerminal get_source() { return source; }
 }
 
 }

@@ -1,5 +1,5 @@
-#ifndef SHEAR__DETAIL__MAKE_VECTOR_EXCLUDING_HPP
-#define SHEAR__DETAIL__MAKE_VECTOR_EXCLUDING_HPP
+#ifndef SHEAR__COMPILETIME__MAKE_VECTOR_EXCLUDING_HPP
+#define SHEAR__COMPILETIME__MAKE_VECTOR_EXCLUDING_HPP
 
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/mpl/vector.hpp>
@@ -10,7 +10,7 @@
 
 #include <shear/core.hpp>
 
-namespace shear { namespace detail {
+namespace shear { namespace compiletime {
 
 class missing;
 
@@ -18,7 +18,7 @@ template<
   typename TExclude,
   BOOST_PP_ENUM_BINARY_PARAMS(
     SHEAR_VECTOR_LIMIT,
-    typename T, = detail::missing BOOST_PP_INTERCEPT
+    typename T, = compiletime::missing BOOST_PP_INTERCEPT
   )>
 class make_vector_excluding {
   private:
@@ -30,7 +30,7 @@ class make_vector_excluding {
     typedef typename mpl::copy_if<
         vector_with_junk,
         mpl::not_<mpl::or_<
-          boost::is_same<mpl::_1, detail::missing>,
+          boost::is_same<mpl::_1, compiletime::missing>,
           boost::is_same<mpl::_1, TExclude>
         > >
       >::type type;
@@ -38,5 +38,5 @@ class make_vector_excluding {
 
 }}
 
-#endif // SHEAR__DETAIL__MAKE_VECTOR_EXCLUDING_HPP
+#endif // SHEAR__COMPILETIME__MAKE_VECTOR_EXCLUDING_HPP
 

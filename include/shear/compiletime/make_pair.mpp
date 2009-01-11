@@ -1,4 +1,4 @@
-namespace shear::detail {
+namespace shear::compiletime {
 
 metafunction boost::mpl::pair<T,U>
 make_pair<typename T, typename U>(T f, U s)

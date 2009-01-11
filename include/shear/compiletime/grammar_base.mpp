@@ -1,4 +1,4 @@
-namespace shear::detail {
+namespace shear::compiletime {
 
 metatype grammar_base {
   constructor(
@@ -7,8 +7,8 @@ metatype grammar_base {
       mpl::Sequence<production_s> p
     ) :
     root(r),
-    tokens(t),
-    productions(p),
+    tokens(mpl::copy(t, set_inserter(mpl::set<Token>()))),
+    productions(mpl::copy(p, set_inserter(mpl::set<production_s>()))),
     non_terminals(
       mpl::transform(
         productions,
@@ -33,8 +33,8 @@ metatype grammar_base {
     );
 
   NonTerminal root;
-  mpl::Sequence<Token> tokens;
-  mpl::Sequence<production_s> productions;
+  mpl::set<Token> tokens;
+  mpl::set<production_s> productions;
   mpl::set<NonTerminal> non_terminals;
   mpl::vector<mpl::pair<Symbol, mpl::IntegralConstant>> symbol_index_vector;
   mpl::map<Symbol, mpl::IntegralConstant> symbol_index_map;

@@ -45,7 +45,7 @@ int main()
   >::type grammar_type;
   // Construct the grammar
   grammar_type arithmetic_grammar;
-  static_cast<void>(arithmetic_grammar);
+  arithmetic_grammar.check();
 #if 0
   // The parser type is similarly horrible, but obtainable from the grammar
   // type so we don't need to express all that stuff again.

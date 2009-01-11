@@ -1,0 +1,12 @@
+namespace shear::compiletime
+{
+
+metafunction mpl::bool_
+show_me(typename T)
+{
+  assert(mpl::not_(boost::is_same(T, T)));
+  return mpl::true_;
+};
+
+}
+

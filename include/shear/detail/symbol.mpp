@@ -1,7 +1,0 @@
-namespace shear::detail {
-
-concept Symbol {
-}
-
-}
-

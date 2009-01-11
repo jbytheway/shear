@@ -1,4 +1,4 @@
-namespace shear::detail {
+namespace shear::compiletime {
 
 metafunction mpl::Inserter<mpl::vector<T>, T>
 vector_inserter<typename T>() {

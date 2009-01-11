@@ -1,10 +1,10 @@
-#ifndef SHEAR__DETAIL__TAGGED_SYMBOL_HPP
-#define SHEAR__DETAIL__TAGGED_SYMBOL_HPP
+#ifndef SHEAR__COMPILETIME__TAGGED_SYMBOL_HPP
+#define SHEAR__COMPILETIME__TAGGED_SYMBOL_HPP
 
-#include <shear/detail/argument_tag.hpp>
+#include <shear/compiletime/argument_tag.hpp>
 #include <shear/discard.hpp>
 
-namespace shear { namespace detail {
+namespace shear { namespace compiletime {
 
 template<typename TaggedSymbol>
 struct get_symbol {
@@ -28,5 +28,5 @@ struct get_tag<discard<TaggedSymbol> > {
 
 }}
 
-#endif // SHEAR__DETAIL__TAGGED_SYMBOL_HPP
+#endif // SHEAR__COMPILETIME__TAGGED_SYMBOL_HPP
 
