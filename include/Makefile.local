@@ -1,0 +1,16 @@
+MPP_FILES := $(shell find . -name '*.mpp')
+# Don't want to depend on directories because they're updated when you access a
+# file in them
+MPP_DIRS := #$(sort $(dir $(MPP_FILES)))
+HPP_FILES := $(addsuffix .hpp,$(basename $(MPP_FILES)))
+
+all: $(HPP_FILES)
+
+test:
+
+$(HPP_FILES): meta++.stamp
+
+meta++.stamp: $(META) $(MPP_FILES) $(MPP_DIRS)
+	mono --debug $(META) $(MPP_FILES)
+	touch $@
+

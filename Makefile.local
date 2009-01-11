@@ -1,0 +1,6 @@
+SUBDIRS := include test
+
+all-recurse-test: all-recurse-include
+
+tset-recurse-test: test-recurse-include
+
