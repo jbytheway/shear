@@ -1,0 +1,10 @@
+namespace shear::detail {
+
+metafunction boost::mpl::pair<T,U>
+make_pair<typename T, typename U>(T f, U s)
+{
+  return mpl::pair<T,U>(f,s);
+};
+
+}
+

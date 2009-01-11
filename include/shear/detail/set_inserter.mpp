@@ -1,0 +1,14 @@
+namespace shear::detail {
+
+using mpl::set;
+
+metafunction mpl::Inserter<set<T>, T>
+set_inserter<typename T>(set<T> Initial) {
+  return mpl::inserter<set<T>, T>(
+      Initial,
+      lambda(set<T>, T) { _1.insert(_2) }
+    );
+};
+
+}
+

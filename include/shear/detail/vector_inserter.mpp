@@ -1,0 +1,9 @@
+namespace shear::detail {
+
+metafunction mpl::Inserter<mpl::vector<T>, T>
+vector_inserter<typename T>() {
+  return mpl::back_inserter<T>(mpl::vector0<T>());
+};
+
+}
+

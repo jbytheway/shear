@@ -1,0 +1,94 @@
+namespace boost::mpl {
+
+concept IntegralConstant {
+  IntegralConstant next() "boost/mpl/next_prior.hpp";
+}
+
+concept ForwardIterator<typename+ ItemType>
+{
+  ItemType deref() "boost/mpl/deref.hpp";
+  ForwardIterator<ItemType> next() "boost/mpl/next_prior.hpp";
+}
+
+concept BidirectionalIterator<typename+ ItemType> : ForwardIterator<ItemType>
+{
+}
+
+concept RandomAccessIterator<typename+ ItemType> :
+  BidirectionalIterator<ItemType>
+{
+}
+
+concept Sequence<typename+ ItemType>
+{
+  ForwardIterator<ItemType> begin() "boost/mpl/begin.hpp";
+  ForwardIterator<ItemType> end() "boost/mpl/end.hpp";
+  long_ size() "boost/mpl/size.hpp";
+  bool_ empty() "boost/mpl/empty.hpp";
+  ItemType front() "boost/mpl/front.hpp";
+};
+
+concept BidirectionalSequence<typename+ ItemType> : Sequence<ItemType>
+{
+  BidirectionalIterator<ItemType> begin();
+  BidirectionalIterator<ItemType> end();
+  ItemType back() "boost/mpl/back.hpp";
+}
+
+concept RandomAccessSequence<typename+ ItemType> :
+  BidirectionalSequence<ItemType>
+{
+  RandomAccessIterator<ItemType> begin();
+  RandomAccessIterator<ItemType> end();
+  ItemType at(IntegralConstant) "boost/mpl/at.hpp";
+}
+
+concept ExtensibleSequence<typename+ ItemType> : Sequence<ItemType>
+{
+  ExtensibleSequence<ItemType>
+    insert(ForwardIterator<ItemType>, ItemType) "boost/mpl/insert.hpp";
+  ExtensibleSequence<ItemType>
+    insert_range(ForwardIterator<ItemType>, Sequence<ItemType>)
+    "boost/mpl/insert_range.hpp";
+  ExtensibleSequence<ItemType> erase(ForwardIterator<ItemType>)
+    "boost/mpl/erase.hpp";
+  ExtensibleSequence<ItemType> clear() "boost/mpl/clear.hpp";
+}
+
+concept BackExtensibleSequence<typename+ ItemType> :
+  ExtensibleSequence<ItemType>
+{
+  BackExtensibleSequence<ItemType>
+  insert_range(ForwardIterator<ItemType>, Sequence<ItemType>);
+  BackExtensibleSequence<ItemType>
+  push_back(ItemType) "boost/mpl/push_back.hpp";
+  BackExtensibleSequence<ItemType> pop_back() "boost/mpl/pop_back.hpp";
+  ItemType back() "boost/mpl/back.hpp";
+}
+
+concept AssociativeSequence<typename TKey, typename+ TValue, typename+ TItem> :
+  Sequence<TItem>
+{
+  bool_ has_key(TKey) "boost/mpl/has_key.hpp";
+  IntegralConstant count(TItem) "boost/mpl/count.hpp";
+  IntegralConstant order(TKey) "boost/mpl/order.hpp";
+  TValue at(TKey) "boost/mpl/at.hpp";
+}
+
+concept ExtensibleAssociativeSequence<
+    typename TKey, typename+ TValue, typename+ TItem
+  > :
+  AssociativeSequence<TKey, TValue, TItem>
+{
+  ExtensibleAssociativeSequence<TKey, TValue, TItem> insert(TItem)
+    "boost/mpl/insert.hpp";
+}
+
+concept Inserter<typename TState, typename TOperand>
+{
+  TState state;
+  (TState, TOperand) -> TState operation;
+}
+
+}
+

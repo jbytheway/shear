@@ -1,0 +1,10 @@
+namespace shear::detail
+{
+
+concept TaggedSymbol {
+  Symbol get_symbol() "shear/detail/tagged_symbol.hpp";
+  argument_tag get_tag() "shear/detail/tagged_symbol.hpp";
+}
+
+}
+

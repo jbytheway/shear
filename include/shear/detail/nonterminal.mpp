@@ -1,0 +1,7 @@
+namespace shear::detail {
+
+concept NonTerminal : Symbol {
+}
+
+}
+

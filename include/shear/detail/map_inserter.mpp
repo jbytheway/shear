@@ -1,0 +1,15 @@
+namespace shear::detail {
+
+using mpl::map;
+using mpl::pair;
+
+metafunction mpl::Inserter<map<T, U>, pair<T, U>>
+map_inserter<typename T, typename U>(map<T,U> Initial) {
+  return mpl::inserter<map<T,U>, pair<T,U>>(
+      Initial,
+      lambda(map<T,U>, pair<T,U>) { _1.insert(_2) }
+    );
+};
+
+}
+

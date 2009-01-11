@@ -1,0 +1,44 @@
+namespace shear::detail {
+
+metatype grammar_base {
+  constructor(
+      NonTerminal r,
+      mpl::Sequence<Token> t,
+      mpl::Sequence<production_s> p
+    ) :
+    root(r),
+    tokens(t),
+    productions(p),
+    non_terminals(
+      mpl::transform(
+        productions,
+        lambda(production_s) { _1.get_source() },
+        set_inserter(mpl::set0<NonTerminal>())
+      )
+    ),
+    symbol_index_vector(
+      mpl::fold(
+        mpl::joint_view<Symbol>(tokens, non_terminals),
+        mpl::vector0<mpl::pair<Symbol, mpl::IntegralConstant>>(),
+        lambda(mpl::vector<mpl::pair<Symbol, mpl::IntegralConstant>>, Symbol) {
+          _1.push_back(make_pair(_2, _1.size()))
+        }
+      )
+    ),
+    symbol_index_map(
+      mpl::copy(
+        symbol_index_vector,
+        map_inserter(mpl::map0<Symbol, mpl::IntegralConstant>())
+      )
+    );
+
+  NonTerminal root;
+  mpl::Sequence<Token> tokens;
+  mpl::Sequence<production_s> productions;
+  mpl::set<NonTerminal> non_terminals;
+  mpl::vector<mpl::pair<Symbol, mpl::IntegralConstant>> symbol_index_vector;
+  mpl::map<Symbol, mpl::IntegralConstant> symbol_index_map;
+}
+
+}
+

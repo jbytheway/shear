@@ -1,0 +1,272 @@
+namespace boost::mpl {
+  // This is marked as typeless because it takes more than 5 arguments (the
+  // default maximum for placeholder expression arity)
+  extern "boost/mpl/vector.hpp" typeless metatype
+  vector<typename+ T> :
+    RandomAccessSequence<T>,
+    BackExtensibleSequence<T>,
+  {
+    constructor(T...);
+    bool_ empty();
+    long_ size();
+    RandomAccessIterator<T> begin();
+    RandomAccessIterator<T> end();
+    T front();
+    T back();
+    T at(IntegralConstant);
+    vector<T> insert(ForwardIterator<T>, T);
+    vector<T> insert_range(ForwardIterator<T>, Sequence<T>);
+    vector<T> erase(ForwardIterator<T>);
+    vector<T> clear();
+    vector<T> push_back(T);
+    vector<T> pop_back();
+  };
+
+  extern "boost/mpl/vector.hpp" metafunction vector<T>
+  vector0<typename T>();
+
+  extern "boost/mpl/vector.hpp" metafunction vector<T>
+  vector1<typename T>(T);
+
+  extern "boost/mpl/vector.hpp" metafunction vector<T>
+  vector2<typename T>(T,T);
+
+  extern "boost/mpl/vector.hpp" metafunction vector<T>
+  vector3<typename T>(T,T,T);
+
+  extern "boost/mpl/vector.hpp" metafunction vector<T>
+  vector4<typename T>(T,T,T,T);
+
+  extern "boost/mpl/vector.hpp" metafunction vector<T>
+  vector5<typename T>(T,T,T,T,T);
+
+  extern "boost/mpl/set.hpp" metatype
+  set<typename TKey> :
+    ExtensibleAssociativeSequence<TKey, TKey, TKey>
+  {
+    constructor();
+    bool_ empty();
+    long_ size();
+    ForwardIterator<TKey> begin();
+    ForwardIterator<TKey> end();
+    TKey front();
+    bool_ has_key(TKey);
+    IntegralConstant count(TKey);
+    IntegralConstant order(TKey);
+    TKey at(TKey);
+    set<TKey> insert(TKey);
+  }
+
+  extern "boost/mpl/set.hpp" metafunction set<T>
+  set0<typename T>();
+
+  extern "boost/mpl/set.hpp" metafunction set<T>
+  set1<typename T>(T);
+
+  extern "boost/mpl/set.hpp" metafunction set<T>
+  set2<typename T>(T,T);
+
+  extern "boost/mpl/set.hpp" metafunction set<T>
+  set3<typename T>(T,T,T);
+
+  extern "boost/mpl/set.hpp" metafunction set<T>
+  set4<typename T>(T,T,T,T);
+
+  extern "boost/mpl/set.hpp" metafunction set<T>
+  set5<typename T>(T,T,T,T,T);
+
+  extern "boost/mpl/map.hpp" metatype
+  map<typename TKey, typename+ TValue> :
+    ExtensibleAssociativeSequence<TKey, TValue, pair<TKey, TValue>>
+  {
+    constructor();
+    bool_ empty();
+    long_ size();
+    ForwardIterator<pair<TKey, TValue>> begin();
+    ForwardIterator<pair<TKey, TValue>> end();
+    pair<TKey, TValue> front();
+    bool_ has_key(TKey);
+    bool_ count(pair<TKey, TValue>);
+    IntegralConstant order(TKey);
+    TValue at(TKey);
+    map<TKey, TValue> insert(pair<TKey, TValue>);
+  }
+
+  extern "boost/mpl/map.hpp" metafunction map<T,U>
+  map0<typename T, typename U>();
+
+  extern "boost/mpl/map.hpp" metafunction map<T,U>
+  map1<typename T, typename U>(pair<T,U>);
+
+  extern "boost/mpl/map.hpp" metafunction map<T,U>
+  map2<typename T, typename U>(pair<T,U>,pair<T,U>);
+
+  extern "boost/mpl/map.hpp" metafunction map<T,U>
+  map3<typename T, typename U>(pair<T,U>,pair<T,U>,pair<T,U>);
+
+  extern "boost/mpl/map.hpp" metafunction map<T,U>
+  map4<typename T, typename U>(pair<T,U>,pair<T,U>,pair<T,U>,pair<T,U>);
+
+  extern "boost/mpl/map.hpp" metafunction map<T,U>
+  map5<typename T, typename U>(
+      pair<T,U>,pair<T,U>,pair<T,U>,pair<T,U>,pair<T,U>
+    );
+
+  extern "boost/mpl/range_c.hpp" metatype
+  range_c<IntegralConstant T> : RandomAccessSequence<T>
+  {
+    bool_ empty();
+    long_ size();
+    RandomAccessIterator<T> begin();
+    RandomAccessIterator<T> end();
+    T front();
+    T back();
+    T at(IntegralConstant);
+  }
+
+  extern "boost/mpl/joint_view.hpp" metafunction Sequence<T>
+  joint_view<typename T>(Sequence<T>, Sequence<T>);
+
+  extern "boost/mpl/single_view.hpp" metafunction Sequence<T>
+  single_view<typename T>(T);
+
+  extern "boost/mpl/transform_view.hpp" metafunction Sequence<U>
+  transform_view<typename T, typename U>(Sequence<T>, T -> U);
+
+  extern "boost/mpl/zip_view.hpp" metafunction Sequence<Sequence<T>>
+  zip_view<typename T>(Sequence<Sequence<T> >);
+
+  extern "boost/mpl/is_sequence.hpp" metafunction bool_
+  is_sequence(typename);
+
+  extern "boost/mpl/inserter.hpp" typeless metatype
+  inserter<typename TState, typename TOperand> : Inserter<TState,TOperand>
+  {
+    constructor(TState s, (TState, TOperand) -> TState o);
+    TState state;
+    (TState, TOperand) -> TState operation;
+  }
+
+  // TODO: TState should be BackExtensibleSequence<T> when that's supported
+  extern "boost/mpl/back_inserter.hpp" typeless metafunction Inserter<TState, T>
+  back_inserter<typename T, typename TState>(TState);
+
+  extern "boost/mpl/fold.hpp" metafunction T
+  fold<typename T, typename U>(Sequence<U>, T, (T, U) -> T);
+
+  alias accumulate = fold;
+
+  extern "boost/mpl/find_if.hpp" metafunction ForwardIterator<T>
+  find_if<typename T>(Sequence<T>, T -> bool_);
+
+  extern "boost/mpl/contains.hpp" metafunction bool_
+  contains<typename T>(Sequence<T>, T);
+
+  extern "boost/mpl/min_element.hpp" metafunction ForwardIterator<T>
+  min_element<typename T>(Sequence<T>, (T, T) -> bool_);
+
+  // Not really correct; T should be less-than-comparable or include the binary
+  // predicate argument...
+  extern "boost/mpl/max_element.hpp" metafunction ForwardIterator<T>
+  max_element<typename T>(Sequence<T>);
+
+  extern "boost/mpl/copy.hpp" metafunction TState
+  copy<typename T, typename TState>(Sequence<T>, Inserter<TState, T>);
+
+  extern "boost/mpl/copy_if.hpp" metafunction TState
+  copy_if<typename T, typename TState>(
+      Sequence<T>, T -> bool_, Inserter<TState, T>
+    );
+
+  extern "boost/mpl/transform.hpp" metafunction UState
+  transform<typename T, typename U, typename UState>(
+      Sequence<T>, T -> U, Inserter<UState, U>
+    );
+
+  extern "boost/mpl/remove.hpp" metafunction TState
+  remove<typename T, typename TState>(Sequence<T>, T, Inserter<TState, T>);
+
+  extern "boost/mpl/remove_if.hpp" metafunction TState
+  remove_if<typename T, typename TState>(
+      Sequence<T>, T -> bool_, Inserter<TState, T>
+    );
+
+  extern "boost/mpl/unique.hpp" metafunction Sequence<T>
+  unique<typename T>(Sequence<T>, (T,T) -> IntegralConstant);
+
+  extern "boost/mpl/sort.hpp" metafunction Sequence<T>
+  sort<typename T>(Sequence<T>, (T,T) -> IntegralConstant);
+
+  extern "boost/mpl/if.hpp" metafunction T
+  if_<typename T>(IntegralConstant, T, T);
+
+  extern "boost/mpl/plus.hpp" metafunction T
+  plus<IntegralConstant T>(T, T);
+
+  extern "boost/mpl/minus.hpp" metafunction T
+  minus<IntegralConstant T>(T, T);
+
+  extern "boost/mpl/less.hpp" metafunction bool_
+  less<IntegralConstant T>(T, T);
+
+  extern "boost/mpl/less_equal.hpp" metafunction bool_
+  less_equal<IntegralConstant T>(T, T);
+
+  extern "boost/mpl/equal_to.hpp" metafunction bool_
+  equal_to<IntegralConstant T>(T, T);
+
+  extern "boost/mpl/and.hpp" metafunction bool_
+  and_(bool_, bool_);
+
+  extern "boost/mpl/or.hpp" metafunction bool_
+  or_(IntegralConstant, IntegralConstant);
+
+  extern "boost/mpl/not.hpp" metafunction bool_
+  not_(IntegralConstant);
+
+  extern "boost/mpl/min_max.hpp" metafunction T
+  min<IntegralConstant T>(T,T);
+
+  extern "boost/mpl/bool.hpp" metatype
+  bool_ : IntegralConstant {
+    bool_ next() "boost/mpl/next_prior.hpp";
+  }
+
+  extern "boost/mpl/bool.hpp" bool_ true_;
+  extern "boost/mpl/bool.hpp" bool_ false_;
+
+  extern "boost/mpl/int.hpp" metatype
+  int_ : IntegralConstant {
+    int_ next() "boost/mpl/next_prior.hpp";
+  }
+
+  extern "boost/mpl/long.hpp" metatype
+  long_ : IntegralConstant {
+    long_ next() "boost/mpl/next_prior.hpp";
+  }
+
+  extern "boost/mpl/pair.hpp" metatype
+  pair<typename+ T, typename+ U>
+  {
+    constructor(T, U);
+    T first() "boost/mpl/pair.hpp";
+    U second() "boost/mpl/pair.hpp";
+  }
+}
+
+namespace boost {
+  extern "boost/type_traits/is_same.hpp" metafunction integral_constant_bool
+  is_same(typename, typename);
+
+  extern "boost/type_traits/integral_constant.hpp" metatype
+  integral_constant_bool : mpl::IntegralConstant {
+    // FIXME: This probably doesn't actually work...
+    integral_constant_bool next() "boost/mpl/next_prior.hpp";
+  }
+
+  extern "boost/type_traits/integral_constant.hpp" integral_constant_bool
+  true_type;
+  extern "boost/type_traits/integral_constant.hpp" integral_constant_bool
+  false_type;
+}
+
