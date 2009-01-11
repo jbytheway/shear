@@ -1,3 +1,6 @@
+#define BOOST_TEST_DYN_LINK
+#include <boost/test/unit_test.hpp>
+
 #include <boost/scoped_ptr.hpp>
 
 #include <shear/make_grammar.hpp>
@@ -5,6 +8,8 @@
 
 namespace sh = shear;
 namespace mpl = boost::mpl;
+
+namespace arithmetic_symbols {
 
 class X {};
 class PLUS {};
@@ -25,7 +30,11 @@ class expression {
     boost::scoped_ptr<expression> sub_;
 };
 
-int main()
+}
+
+using namespace arithmetic_symbols;
+
+BOOST_AUTO_TEST_CASE(arithmetic_grammar)
 {
   // The type of the grammar incorporates pretty much everything required for
   // it (an unfortunate almost-necessity; runtime polymorphism opens far too

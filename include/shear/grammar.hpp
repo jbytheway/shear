@@ -1,7 +1,9 @@
-#ifndef SHEAR__GRAMMAR_HAPP
-#define SHEAR__GRAMMAR_HAPP
+#ifndef SHEAR__GRAMMAR_HPP
+#define SHEAR__GRAMMAR_HPP
 
 #include <map>
+#include <set>
+#include <queue>
 
 #include <boost/mpl/for_each.hpp>
 #include <boost/foreach.hpp>
@@ -13,6 +15,7 @@
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/mem_fun.hpp>
 
+#include <shear/grammar_exception.hpp>
 #include <shear/compiletime/grammar_base.hpp>
 #include <shear/runtime/non_terminal.hpp>
 #include <shear/runtime/production.hpp>
@@ -49,8 +52,8 @@ class grammar :
             )
         >
       >
-    > ProductionsMap;
-    ProductionsMap productions_r_;
+    > ProductionMap;
+    ProductionMap productions_r_;
     typedef boost::multi_index_container<
       runtime::non_terminal,
       boost::multi_index::indexed_by<
@@ -62,8 +65,8 @@ class grammar :
             )
         >
       >
-    > NonTerminalsMap;
-    NonTerminalsMap non_terminals_r_;
+    > NonTerminalMap;
+    NonTerminalMap non_terminals_r_;
 };
 
 template<typename R, typename T, typename P>
@@ -91,7 +94,7 @@ grammar<R, T, P>::grammar()
   bool altered;
   do {
     altered = false;
-    BOOST_FOREACH(const typename NonTerminalsMap::value_type& nt,
+    BOOST_FOREACH(const typename NonTerminalMap::value_type& nt,
         non_terminals_r_) {
       if (!nt.produces_empty()) {
         BOOST_FOREACH(const runtime::production::ptr& production,
@@ -125,7 +128,71 @@ void grammar<R, T, P>::check()
 template<typename R, typename T, typename P>
 void grammar<R, T, P>::check_for_loops()
 {
-  // TODO:
+  BOOST_FOREACH(const runtime::non_terminal& checking_non_terminal,
+      non_terminals_r_) {
+    // Create a collection to store those non-terminals which this
+    // one can produce
+    std::set<symbol_index_type> non_terminals_produced;
+    std::queue<symbol_index_type> non_terminals_to_process;
+    non_terminals_to_process.push(checking_non_terminal.index());
+
+    while (!non_terminals_to_process.empty()) {
+      // Get next produced non-terminal
+      const runtime::non_terminal& to_process =
+        *non_terminals_r_.find(non_terminals_to_process.front());
+      non_terminals_to_process.pop();
+      if (non_terminals_produced.count(to_process.index())) {
+        continue;
+      }
+      // Add it to the collection of those produced
+      non_terminals_produced.insert(to_process.index());
+
+      // Look for all rules capable of producing a single symbol
+      BOOST_FOREACH(const runtime::production::ptr& production,
+          to_process.productions())
+      {
+        size_t min_length = 0;
+        const runtime::non_terminal* last_compulsory_symbol = NULL;
+
+        BOOST_FOREACH(symbol_index_type symbol_index, production->produced()) {
+          NonTerminalMap::iterator symbol = non_terminals_r_.find(symbol_index);
+          if (symbol != non_terminals_r_.end() && !symbol->produces_empty())
+          {
+            last_compulsory_symbol = &*symbol;
+            ++min_length;
+            if (min_length > 1)
+              break;
+          }
+        }
+
+        switch (min_length)
+        {
+          case 0:
+            // In this case any of the symbols in the list can be produced alone
+            BOOST_FOREACH(symbol_index_type symbol_index,
+                production->produced())
+            {
+              if (symbol_index == checking_non_terminal.index())
+                throw grammar_loop_exception(production);
+              if (non_terminals_r_.count(symbol_index))
+                non_terminals_to_process.push(symbol_index);
+            }
+            break;
+          case 1:
+            // Check for a loop
+            if (last_compulsory_symbol == &checking_non_terminal)
+              throw grammar_loop_exception(production);
+            // Enqueue this for further processing
+            if (non_terminals_r_.count(last_compulsory_symbol->index()))
+              non_terminals_to_process.push(last_compulsory_symbol->index());
+            break;
+          default:
+            break;
+        }
+      }
+    }
+  }
+
 }
 
 template<typename R, typename T, typename P>
@@ -142,5 +209,5 @@ void grammar<R, T, P>::check_for_non_reachable_non_terminals()
 
 }
 
-#endif // SHEAR__GRAMMAR_HAPP
+#endif // SHEAR__GRAMMAR_HPP
 

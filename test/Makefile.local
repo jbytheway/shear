@@ -1,5 +1,6 @@
 BIN = shear-test
 THIS_CPPFLAGS = -I $(top_srcdir)include
+LIBS = -lboost_unit_test_framework
 
 test-nonrecursive: $(BIN)
 	./$<
