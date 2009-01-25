@@ -38,8 +38,11 @@ class grammar :
       ));
   public:
     typedef size_t symbol_index_type;
+    typedef RootSymbol root_symbol;
     static const symbol_index_type num_symbols =
       mpl::size<typename grammar::symbol_index_vector>::type::value;
+    static const symbol_index_type end_of_file_code = num_symbols;
+
     typedef typename mpl::at<
         typename grammar::symbol_index_map,
         typename grammar::root
@@ -53,7 +56,7 @@ class grammar :
       throw(non_productive_non_terminals_exception&);
     void check_for_non_reachable_non_terminals()
       throw(non_reachable_non_terminals_exception&);
-  private:
+
     typedef boost::multi_index_container<
       runtime::production::ptr,
       boost::multi_index::indexed_by<
@@ -66,7 +69,6 @@ class grammar :
         >
       >
     > ProductionMap;
-    ProductionMap productions_r_;
     typedef boost::multi_index_container<
       runtime::non_terminal,
       boost::multi_index::indexed_by<
@@ -79,6 +81,10 @@ class grammar :
         >
       >
     > NonTerminalMap;
+
+    const NonTerminalMap& non_terminals_r() const { return non_terminals_r_; }
+  private:
+    ProductionMap productions_r_;
     NonTerminalMap non_terminals_r_;
 };
 
@@ -216,13 +222,13 @@ void grammar<R, T, P>::check_for_non_productive_non_terminals()
 {
   // Create a collection of all productive non-terminals
   std::set<symbol_index_type> productive_non_terminals;
-  
+
   // Repeatedly search through all non-terminals looking for new ones
   // to add to the collection
   size_t num_productive_non_terminals;
   do {
     num_productive_non_terminals = productive_non_terminals.size();
-    
+
     BOOST_FOREACH(const runtime::non_terminal& non_terminal, non_terminals_r_)
     {
       if (productive_non_terminals.count(non_terminal.index()))
@@ -244,14 +250,14 @@ void grammar<R, T, P>::check_for_non_productive_non_terminals()
       }
     }
   } while (productive_non_terminals.size() > num_productive_non_terminals);
-  
+
   if (num_productive_non_terminals < non_terminals_r_.size()) {
     std::set<runtime::non_terminal> non_productive_non_terminals;
-    
+
     BOOST_FOREACH(const runtime::non_terminal& non_terminal, non_terminals_r_)
       if (!productive_non_terminals.count(non_terminal.index()))
         non_productive_non_terminals.insert(non_terminal);
-    
+
     throw non_productive_non_terminals_exception(non_productive_non_terminals);
   }
 }
@@ -265,35 +271,33 @@ void grammar<R, T, P>::check_for_non_reachable_non_terminals()
   reachable_non_terminals.insert(root_index::value);
   std::queue<symbol_index_type> non_terminals_to_process;
   non_terminals_to_process.push(root_index::value);
-  
+
   // Process everything in the Queue until nothing is left
   while (!non_terminals_to_process.empty())
   {
     symbol_index_type to_process = non_terminals_to_process.front();
     non_terminals_to_process.pop();
-    
+
     BOOST_FOREACH(const runtime::production::ptr& production,
           non_terminals_r_.find(to_process)->productions()) {
       BOOST_FOREACH(symbol_index_type symbol_index, production->produced()) {
-        if (non_terminals_r_.count(symbol_index)) {
-          if (!reachable_non_terminals.count(symbol_index))
-          {
-            reachable_non_terminals.insert(symbol_index);
-            non_terminals_to_process.push(symbol_index);
-          }
+        if (non_terminals_r_.count(symbol_index) &&
+            !reachable_non_terminals.count(symbol_index)) {
+          reachable_non_terminals.insert(symbol_index);
+          non_terminals_to_process.push(symbol_index);
         }
       }
     }
   }
-  
+
   if (reachable_non_terminals.size() < non_terminals_r_.size())
   {
     std::set<symbol_index_type> non_reachable_non_terminals;
-    
+
     BOOST_FOREACH(const runtime::non_terminal& non_terminal, non_terminals_r_)
       if (!reachable_non_terminals.count(non_terminal.index()))
         non_reachable_non_terminals.insert(non_terminal.index());
-    
+
     throw non_reachable_non_terminals_exception(non_reachable_non_terminals);
   }
 }
