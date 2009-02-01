@@ -18,7 +18,7 @@ template<
     SHEAR_PRODUCTION_LIMIT,
     typename Produced, = compiletime::no_symbol BOOST_PP_INTERCEPT
   )>
-class production : 
+class production :
   public production_s<
     Source,
     typename compiletime::make_vector_excluding<

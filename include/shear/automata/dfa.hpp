@@ -10,25 +10,25 @@
 
 namespace shear { namespace automata {
 
-class dfa_transition {
-  public:
-    typedef boost::shared_ptr<dfa_transition> ptr;
-};
-
 class dfa_state {
   public:
     typedef boost::shared_ptr<dfa_state> ptr;
 
-    dfa_state(const std::set<nfa::state::ptr>& n) : nfa_states_(n) {}
+    dfa_state(size_t index, const std::set<nfa::state::ptr>& n) :
+      index_(index), nfa_states_(n) {}
     virtual ~dfa_state() = 0;
 
     const std::set<nfa::state::ptr>& nfa_states() const { return nfa_states_; }
+    size_t index() const { return index_; }
 
     void add_transition(const size_t match, const ptr& destination) {
       assert(!transitions_.count(match));
       transitions_[match] = destination;
     }
+
+    const std::map<size_t, ptr>& transitions() const { return transitions_; }
   private:
+    size_t index_;
     std::set<nfa::state::ptr> nfa_states_;
     std::map<size_t, ptr> transitions_;
 };
@@ -42,7 +42,9 @@ class dfa {
   protected:
     boost::shared_ptr<state_type> empty_state_;
     boost::shared_ptr<state_type> start_state_;
-    
+
+    class index_tag;
+
     typedef boost::multi_index_container<
       boost::shared_ptr<state_type>,
       boost::multi_index::indexed_by<
@@ -51,6 +53,14 @@ class dfa {
               dfa_state,
               const std::set<nfa::state::ptr>&,
               nfa_states
+            )
+        >,
+        boost::multi_index::ordered_unique<
+          boost::multi_index::tag<index_tag>,
+          BOOST_MULTI_INDEX_CONST_MEM_FUN(
+              dfa_state,
+              size_t,
+              index
             )
         >
       >
@@ -66,12 +76,12 @@ inline dfa<State>::dfa(const nfa& n)
 {
   {
     std::set<nfa::state::ptr> nfa_states;
-    empty_state_.reset(new state_type(nfa_states));
+    empty_state_.reset(new state_type(states_.size(), nfa_states));
     states_.insert(empty_state_);
 
     nfa_states.insert(n.start_state());
     close(nfa_states);
-    start_state_.reset(new state_type(nfa_states));
+    start_state_.reset(new state_type(states_.size(), nfa_states));
     states_.insert(start_state_);
   }
 
@@ -116,7 +126,7 @@ inline dfa<State>::dfa(const nfa& n)
       boost::shared_ptr<state_type> new_state;
       if (existing == states_.end()) {
         // We didn't already have it
-        new_state.reset(new state_type(destination_states));
+        new_state.reset(new state_type(states_.size(), destination_states));
         to_process.push(new_state);
         states_.insert(new_state);
       } else {

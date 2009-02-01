@@ -15,7 +15,7 @@ class item_state : public automata::nfa::state {
       get_next_following_(false)
     {
     }
-    
+
     // For the state at a given place in a production
     template<typename NonTerminals, typename FirstSets>
     item_state(
@@ -24,6 +24,8 @@ class item_state : public automata::nfa::state {
         const NonTerminals& non_terminals,
         const FirstSets& first_sets
       ) :
+      production_(production),
+      ultimate_position_(position == production->produced().size()),
       penultimate_position_(position == production->produced().size()-1),
       get_next_following_(false)
     {
@@ -72,15 +74,15 @@ class item_state : public automata::nfa::state {
             progress_transition_->destination()
           );
         altered = progress_to->add_lookahead(lookahead_) || altered;
-        
+
         if (get_next_following_) {
           altered = add_following(progress_to->following_) || altered;
         }
-        
+
         if (zoom_in_transition_) {
           automata::nfa::state::ptr zoom_in_station =
             zoom_in_transition_->destination();
-        
+
           BOOST_FOREACH(automata::nfa::transition::ptr zoomed_in_transition,
               zoom_in_station->transitions()) {
             ptr zoomed_in_state = boost::dynamic_pointer_cast<item_state>(
@@ -96,6 +98,13 @@ class item_state : public automata::nfa::state {
 
     bool add_lookahead(size_t i) {
       return lookahead_.insert(i).second;
+    }
+
+    template<typename OutputIterator>
+    void get_reduction(OutputIterator o, size_t lookahead) {
+      if (ultimate_position_ && lookahead_.count(lookahead) && production_) {
+        *o++ = production_;
+      }
     }
   private:
     template<typename Range>
@@ -118,6 +127,8 @@ class item_state : public automata::nfa::state {
       return lookahead_.size() != old_size;
     }
 
+    runtime::production::ptr production_;
+    bool ultimate_position_;
     bool penultimate_position_;
     bool get_next_following_;
     std::set<size_t> lookahead_;

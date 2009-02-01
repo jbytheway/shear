@@ -9,6 +9,24 @@ metatype grammar_base {
     root(r),
     tokens(mpl::copy(t, set_inserter(mpl::set<Token>()))),
     productions(mpl::copy(p, set_inserter(mpl::set<production_s>()))),
+    production_index_vector(
+      mpl::fold(
+        productions,
+        mpl::vector0<mpl::pair<production_s, mpl::IntegralConstant>>(),
+        lambda(
+            mpl::vector<mpl::pair<production_s, mpl::IntegralConstant>>,
+            production_s
+          ) {
+          _1.push_back(make_pair(_2, _1.size()))
+        }
+      )
+    ),
+    production_index_map(
+      mpl::copy(
+        production_index_vector,
+        map_inserter(mpl::map0<production_s, mpl::IntegralConstant>())
+      )
+    ),
     non_terminals(
       mpl::transform(
         productions,
@@ -35,6 +53,9 @@ metatype grammar_base {
   NonTerminal root;
   mpl::set<Token> tokens;
   mpl::set<production_s> productions;
+  mpl::vector<mpl::pair<production_s, mpl::IntegralConstant>>
+    production_index_vector;
+  mpl::map<production_s, mpl::IntegralConstant> production_index_map;
   mpl::set<NonTerminal> non_terminals;
   mpl::vector<mpl::pair<Symbol, mpl::IntegralConstant>> symbol_index_vector;
   mpl::map<Symbol, mpl::IntegralConstant> symbol_index_map;

@@ -1,11 +1,13 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
 
+#include <iostream>
+
 #include <boost/scoped_ptr.hpp>
 
 #include <shear/make_grammar.hpp>
 #include <shear/production.hpp>
-#include <shear/lalr/parser.hpp>
+#include <shear/lalr/parser_from_grammar.hpp>
 
 namespace sh = shear;
 namespace mpl = boost::mpl;
@@ -62,9 +64,10 @@ BOOST_AUTO_TEST_CASE(arithmetic_grammar)
   }
   // The parser type is similarly horrible, but obtainable from the grammar
   // type so we don't need to express all that stuff again.
-  typedef sh::lalr::parser<grammar_type> parser_type;
+  typedef sh::lalr::parser_from_grammar<grammar_type> parser_type;
   parser_type arithmetic_parser(arithmetic_grammar);
-#if 0
+  std::cout << "transition array:\n";
+  arithmetic_parser.dump_transition_array(std::cout);
   // Tokens passed in to the parser one by one
   arithmetic_parser.handle_token(X());
   arithmetic_parser.handle_token(PLUS());
@@ -73,12 +76,17 @@ BOOST_AUTO_TEST_CASE(arithmetic_grammar)
   // encapsulating the result
   parser_type::parse_type parse = arithmetic_parser.finalize();
   // The parse object converted to bool yields success / failure
-  assert(parse);
+  if (!parse) {
+    std::copy(
+        parse.syntax_errors().begin(), parse.syntax_errors().end(),
+        std::ostream_iterator<sh::syntax_error>(std::cerr, "\n")
+      );
+    assert(false);
+  }
   // On success, we can get the root of the parse tree
   expression root = *parse.root();
   // Check it constructed the right things
   assert(!root.is_x());
   assert(root.subexpression().is_x());
-#endif
 }
 

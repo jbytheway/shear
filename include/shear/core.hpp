@@ -17,10 +17,12 @@
 
 namespace boost {
   namespace mpl {}
+  namespace fusion {}
 }
 
 namespace shear {
   namespace mpl = boost::mpl;
+  namespace fusion = boost::fusion;
   namespace px = boost::phoenix;
 
   using px::arg_names::arg1;

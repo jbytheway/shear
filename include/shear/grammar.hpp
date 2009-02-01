@@ -93,12 +93,14 @@ grammar<R, T, P>::grammar()
 {
   // Copy compile-time info to runtime versions
   mpl::for_each<
-    typename grammar::productions
+    typename grammar::productions,
+    mpl::at<typename grammar::production_index_map, mpl::_1>
   >(px::insert(
         px::ref(productions_r_),
         px::construct<runtime::production::ptr>(
           px::new_<runtime::production>(
-            arg1, typename grammar::symbol_index_map()
+            arg1, typename grammar::production_index_vector(),
+            typename grammar::symbol_index_map()
           )
         )
       ));
