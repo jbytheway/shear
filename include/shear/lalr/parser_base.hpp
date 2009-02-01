@@ -103,6 +103,7 @@ void parser_base<RootSymbol, ActionIndexType, SymbolIndexType>::handle_token(
     return;
 
   any_symbol<symbol_index_type> next_symbol = token;
+  bool token_queued = false;
 
   while (true) {
     // Find out from the transition array what it is we're
@@ -120,10 +121,16 @@ void parser_base<RootSymbol, ActionIndexType, SymbolIndexType>::handle_token(
       // We shift and move to specified state
       stack_.push(stack_entry(state_, next_symbol));
       state_ = action;
-      break;
+      if (token_queued) {
+        token_queued = false;
+        next_symbol = token;
+      } else {
+        break;
+      }
     } else {
       // We perform a reduction
       boost::tie(state_, next_symbol) = reduce(state_, -action);
+      token_queued = true;
     }
   }
 }

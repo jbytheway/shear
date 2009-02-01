@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(arithmetic_grammar)
     // productions
     mpl::vector<
       sh::production<expression, X>,
-      sh::production<expression, sh::discard<PLUS>, X>
+      sh::production<expression, expression, sh::discard<PLUS>, X>
     >::type
   >::type grammar_type;
   // Construct the grammar
@@ -62,10 +62,12 @@ BOOST_AUTO_TEST_CASE(arithmetic_grammar)
   } catch (sh::grammar_exception& e) {
     BOOST_ERROR(std::string("grammar exception: ") + e.what());
   }
+  std::cout << "productions:\n";
+  arithmetic_grammar.dump_productions(std::cout);
   // The parser type is similarly horrible, but obtainable from the grammar
   // type so we don't need to express all that stuff again.
   typedef sh::lalr::parser_from_grammar<grammar_type> parser_type;
-  parser_type arithmetic_parser(arithmetic_grammar);
+  parser_type arithmetic_parser(arithmetic_grammar, true);
   std::cout << "transition array:\n";
   arithmetic_parser.dump_transition_array(std::cout);
   // Tokens passed in to the parser one by one
@@ -81,7 +83,7 @@ BOOST_AUTO_TEST_CASE(arithmetic_grammar)
         parse.syntax_errors().begin(), parse.syntax_errors().end(),
         std::ostream_iterator<sh::syntax_error>(std::cerr, "\n")
       );
-    assert(false);
+    BOOST_ERROR("parse suffered syntax error");
   }
   // On success, we can get the root of the parse tree
   expression root = *parse.root();

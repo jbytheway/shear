@@ -9,7 +9,6 @@
 #include <boost/fusion/include/transform.hpp>
 #include <boost/fusion/algorithm/transformation/remove.hpp>
 
-#include <shear/compiletime/show_me.hpp>
 #include <shear/compiletime/argument_type.hpp>
 #include <shear/lalr/any_symbol.hpp>
 
@@ -56,8 +55,6 @@ any_symbol<SymbolIndexType> reduce(const Symbols& symbols)
   typedef typename Production::argument_tags tags;
   typedef typename fusion::result_of::as_vector<tags>::type tags_vector_type;
   tags_vector_type tags_vector;
-  //typedef typename compiletime::show_me<Symbols>::type foo;
-  //typedef typename compiletime::show_me<tags_vector>::type bar;
   typedef typename fusion::result_of::transform<
     const Symbols, tags_vector_type, compiletime::argument_type
   >::type transformed_symbols_type;
@@ -96,15 +93,11 @@ typename boost::enable_if<
   T*
 >::type new_expand_vector(const ArgVec& args) {
   return new T(
-//      BOOST_PP_ENUM_BINARY_PARAMS(
-//        BOOST_PP_LOCAL_ITERATE(),
-//        fusion::at<, >(args) BOOST_PP_INTERCEPT
-//      )
 #define BOOST_PP_LOCAL_MACRO(index) \
-      fusion::at<index>(args),
+      fusion::at<mpl::size_t<index> >(args),
 #define BOOST_PP_LOCAL_LIMITS (0, BOOST_PP_SUB(BOOST_PP_ITERATION(), 2))
 #include BOOST_PP_LOCAL_ITERATE()
-      fusion::at<BOOST_PP_ITERATION()-1>(args)
+      fusion::at<mpl::size_t<BOOST_PP_ITERATION()-1> >(args)
     );
 }
 

@@ -1,6 +1,11 @@
 #ifndef SHEAR__LALR__ANY_SYMBOL_HPP
 #define SHEAR__LALR__ANY_SYMBOL_HPP
 
+#include <boost/type_traits/is_void.hpp>
+#include <boost/mpl/assert.hpp>
+
+#include <shear/core.hpp>
+
 namespace shear { namespace lalr {
 
 template<typename SymbolIndexType>

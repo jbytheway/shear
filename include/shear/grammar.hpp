@@ -83,6 +83,8 @@ class grammar :
     > NonTerminalMap;
 
     const NonTerminalMap& non_terminals_r() const { return non_terminals_r_; }
+
+    void dump_productions(std::ostream&);
   private:
     ProductionMap productions_r_;
     NonTerminalMap non_terminals_r_;
@@ -301,6 +303,17 @@ void grammar<R, T, P>::check_for_non_reachable_non_terminals()
         non_reachable_non_terminals.insert(non_terminal.index());
 
     throw non_reachable_non_terminals_exception(non_reachable_non_terminals);
+  }
+}
+
+template<typename R, typename T, typename P>
+void grammar<R, T, P>::dump_productions(std::ostream& o) {
+  BOOST_FOREACH(runtime::production::ptr production, productions_r_) {
+    o << "production "<<production->index() << ":";
+    BOOST_FOREACH(symbol_index_type symbol_index, production->produced()) {
+      o << ' ' << symbol_index;
+    }
+    o << '\n';
   }
 }
 

@@ -1,6 +1,9 @@
 #ifndef SHEAR__LALR__PARSER_FROM_GRAMMAR_HPP
 #define SHEAR__LALR__PARSER_FROM_GRAMMAR_HPP
 
+#include <iostream>
+
+#include <boost/preprocessor/repetition/enum.hpp>
 #include <boost/array.hpp>
 #include <boost/fusion/include/at.hpp>
 #include <boost/fusion/include/value_at.hpp>
@@ -31,14 +34,14 @@ class parser_from_grammar :
     typedef long action_index_type;
     static const symbol_index_type num_symbols = Grammar::num_symbols;
 
-    parser_from_grammar(const grammar_type&);
+    explicit parser_from_grammar(const grammar_type&, const bool debug = false);
 
     virtual boost::tuple<action_index_type, any_symbol<symbol_index_type> >
     reduce(action_index_type state, action_index_type reduction);
 
     template<typename Token>
     void handle_token(Token t) {
-      boost::shared_ptr<void> token_ptr(new Token(t));
+      boost::shared_ptr<Token> token_ptr(new Token(t));
       parser_base<
           typename Grammar::root_symbol,
           action_index_type,
@@ -77,7 +80,9 @@ class extent_generator<0> {
 }
 
 template<typename Grammar>
-parser_from_grammar<Grammar>::parser_from_grammar(const Grammar& grammar) :
+parser_from_grammar<Grammar>::parser_from_grammar(
+    const Grammar& grammar, const bool debug
+  ) :
   parser_base<
     typename Grammar::root_symbol, action_index_type, symbol_index_type
   >(
@@ -123,13 +128,17 @@ parser_from_grammar<Grammar>::parser_from_grammar(const Grammar& grammar) :
     }
   } while (altered);
 
-  //foreach (NonTerminal nonTerminal in mNonTerminals)
-  //{
-  //	System.Console.WriteLine("First set for "+nonTerminal.NiceName+" is:");
-  //	foreach (Token token in nonTerminal.First)
-  //		System.Console.Write(", "+token.NiceName);
-  //	System.Console.WriteLine();
-  //}
+  if (debug) {
+    BOOST_FOREACH(const typename Grammar::NonTerminalMap::value_type& nt,
+        grammar.non_terminals_r()) {
+      std::cout << "First set for " << nt.human_readable_name() << " is:";
+      std::set<symbol_index_type>& this_first_set = first_sets[nt.index()];
+      BOOST_FOREACH(symbol_index_type token, this_first_set) {
+        std::cout << " " << token;
+      }
+      std::cout << std::endl;
+    }
+  }
 
   // Next we build the NFA.  This consists of a bunch of ItemStates
   // and Stations.
@@ -229,7 +238,6 @@ struct fill_tuple_backwards {
   >
   void operator()(Tuple& tuple, Stack& stack, Integer& state)
   {
-    //typedef typename compiletime::show_me<Tuple>::type foo;
     fusion::at<mpl::size_t<index-1> >(tuple).operator =( stack.top().symbol.
         template get_symbol<
           typename fusion::result_of::value_at<
@@ -270,7 +278,6 @@ reduce_helper(Stack& stack, Integer state)
     typename Grammar::production_index_vector, mpl::long_<reduction>
   >::type>::type production;
   // We extract the symbols in reverse order from the stack into a vector
-  //typedef typename compiletime::show_me<production>::type foo;
   typedef typename production::produced produced;
   typedef typename fusion::result_of::as_vector<
     typename mpl::transform<
@@ -286,6 +293,24 @@ reduce_helper(Stack& stack, Integer state)
   return boost::make_tuple(state, symbol);
 }
 
+template<typename Grammar, long reduction, typename Stack, typename Integer>
+inline typename boost::disable_if<
+  typename mpl::less<
+    mpl::long_<reduction>,
+    typename mpl::size<typename Grammar::productions>::type
+  >::type,
+  boost::tuple<
+    typename parser_from_grammar<Grammar>::action_index_type,
+    any_symbol<typename Grammar::symbol_index_type>
+  >
+>::type
+reduce_helper(Stack&, Integer)
+{
+  // This should never actually be called; but it has to be here to satisfy the
+  // compiler
+  abort();
+}
+
 }
 
 template<typename Grammar>
@@ -298,16 +323,23 @@ parser_from_grammar<Grammar>::reduce(
     action_index_type reduction
   )
 {
+  BOOST_MPL_ASSERT_RELATION(
+      mpl::size<typename Grammar::productions>::type::value,<=,
+      SHEAR_NUM_PRODUCTIONS_LIMIT
+    );
   // reduction counts from 1, not zero
   switch (reduction) {
-#define SHEAR_LALR_PARSER_FROM_GRAMMAR_CASE(val) \
-    case val:                                    \
-      if (val <= mpl::size<typename Grammar::productions>::type::value) { \
-        return detail::reduce_helper<Grammar, long(val-1)>(this->stack_, state); \
-      } else {                                   \
-        break;                                   \
+#define SHEAR_LALR_PARSER_FROM_GRAMMAR_CASE(Z, val, _) \
+    case val+1:                                        \
+      if (val+1 <= mpl::size<typename Grammar::productions>::type::value) { \
+        return detail::reduce_helper<Grammar, long(val)>(this->stack_, state); \
+      } else {                                         \
+        break;                                         \
       }
-    SHEAR_LALR_PARSER_FROM_GRAMMAR_CASE(1)
+    BOOST_PP_REPEAT(
+        SHEAR_NUM_PRODUCTIONS_LIMIT, SHEAR_LALR_PARSER_FROM_GRAMMAR_CASE, _
+      )
+#undef SHEAR_LALR_PARSER_FROM_GRAMMAR_CASE
     default:
       break;
   }

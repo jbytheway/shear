@@ -15,6 +15,10 @@
 #define SHEAR_PRODUCTION_LIMIT SHEAR_LIMIT
 #endif
 
+#ifndef SHEAR_NUM_PRODUCTIONS_LIMIT
+#define SHEAR_NUM_PRODUCTIONS_LIMIT SHEAR_LIMIT
+#endif
+
 namespace boost {
   namespace mpl {}
   namespace fusion {}
