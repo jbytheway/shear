@@ -23,7 +23,7 @@ typename boost::enable_if<
     mpl::size_t<0>
   >::type,
   T*
->::type new_expand_vector(const ArgVec& args) {
+>::type new_expand_vector(const ArgVec&) {
   return new T();
 }
 
