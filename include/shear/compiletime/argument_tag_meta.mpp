@@ -5,6 +5,7 @@ argument_tag {
 }
 
 extern "shear/compiletime/argument_tag.hpp" argument_tag argument_by_reference;
+extern "shear/compiletime/argument_tag.hpp" argument_tag argument_by_pointer;
 extern "shear/compiletime/argument_tag.hpp" argument_tag discard_argument;
 
 }

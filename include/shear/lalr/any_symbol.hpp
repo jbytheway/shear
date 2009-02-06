@@ -3,6 +3,7 @@
 
 #include <boost/type_traits/is_void.hpp>
 #include <boost/mpl/assert.hpp>
+#include <boost/scoped_ptr.hpp>
 
 #include <shear/core.hpp>
 

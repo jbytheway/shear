@@ -3,11 +3,17 @@
 
 #include <shear/compiletime/argument_tag.hpp>
 #include <shear/discard.hpp>
+#include <shear/pointer.hpp>
 
 namespace shear { namespace compiletime {
 
 template<typename TaggedSymbol>
 struct get_symbol {
+  typedef TaggedSymbol type;
+};
+
+template<typename TaggedSymbol>
+struct get_symbol<pointer<TaggedSymbol> > {
   typedef TaggedSymbol type;
 };
 
@@ -19,6 +25,11 @@ struct get_symbol<discard<TaggedSymbol> > {
 template<typename TaggedSymbol>
 struct get_tag {
   typedef argument_by_reference type;
+};
+
+template<typename TaggedSymbol>
+struct get_tag<pointer<TaggedSymbol> > {
+  typedef argument_by_pointer type;
 };
 
 template<typename TaggedSymbol>

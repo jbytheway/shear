@@ -32,6 +32,25 @@ struct argument_type {
 
   template<typename Symbol>
   struct result<
+    argument_type(const boost::shared_ptr<Symbol>&, argument_by_pointer&)> {
+    typedef const boost::shared_ptr<Symbol>& type;
+  };
+
+  template<typename Symbol>
+  struct result<
+    argument_type(boost::shared_ptr<Symbol>, argument_by_pointer)> {
+    typedef const boost::shared_ptr<Symbol>& type;
+  };
+
+  template<typename Symbol>
+  const boost::shared_ptr<Symbol>& operator()(
+      const boost::shared_ptr<Symbol>& s, argument_by_pointer&
+    ) const {
+    return s;
+  }
+
+  template<typename Symbol>
+  struct result<
     argument_type(const boost::shared_ptr<Symbol>&, discard_argument&)> {
     typedef void type;
   };

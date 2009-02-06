@@ -29,7 +29,7 @@ class item_state : public automata::nfa::state {
       penultimate_position_(position == production->produced().size()-1),
       get_next_following_(false)
     {
-      if (position < production->produced().size()-1) {
+      if (position+1 < production->produced().size()) {
         typename NonTerminals::iterator nt =
           non_terminals.find(production->produced()[position]);
         get_next_following_ =

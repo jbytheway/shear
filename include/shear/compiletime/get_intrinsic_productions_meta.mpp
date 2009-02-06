@@ -1,0 +1,7 @@
+namespace shear::compiletime {
+
+extern "shear/compiletime/get_intrinsic_productions.hpp" metafunction
+mpl::Sequence<production_s> get_intrinsic_productions(NonTerminal);
+
+}
+

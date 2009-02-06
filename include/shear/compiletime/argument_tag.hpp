@@ -6,6 +6,7 @@
 namespace shear { namespace compiletime {
 
 struct argument_by_reference {};
+struct argument_by_pointer {};
 struct discard_argument {};
 
 }}

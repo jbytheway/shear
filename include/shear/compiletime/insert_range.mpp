@@ -1,0 +1,13 @@
+namespace shear::compiletime {
+
+metafunction mpl::set<T>
+insert_range<typename T>(mpl::set<T> Set, mpl::Sequence<T> ToInsert) {
+  return mpl::fold(
+    ToInsert,
+    Set,
+    lambda(mpl::set<T>, T) { _1.insert(_2) }
+  );
+};
+
+}
+

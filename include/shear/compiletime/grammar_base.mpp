@@ -1,5 +1,92 @@
 namespace shear::compiletime {
 
+namespace detail {
+
+metafunction mpl::pair<mpl::set<NonTerminal>, mpl::set<production_s>>
+make_grammar_stuff_helper(
+  mpl::bool_ Done,
+  mpl::set<Token> Tokens,
+  mpl::set<NonTerminal> NonTerminals,
+  mpl::Sequence<production_s> ProductionsToProcess,
+  mpl::Sequence<production_s> ProductionsProcessed
+)
+Done == mpl::true_
+{
+  assert(ProductionsToProcess.empty());
+  return make_pair(
+    NonTerminals,
+    mpl::copy(
+      ProductionsProcessed,
+      set_inserter(mpl::set0<production_s>())
+    )
+  );
+}
+Done == mpl::false_
+{
+  auto all_nts =
+    mpl::transform(
+      ProductionsToProcess,
+      lambda(production_s) { _1.get_source() },
+      set_inserter(NonTerminals)
+    );
+  auto produced_symbols =
+    mpl::fold(
+      ProductionsToProcess,
+      mpl::set0<Symbol>(),
+      lambda(mpl::set<Symbol>, production_s) {
+        insert_range(_1, _2.get_produced())
+      }
+    );
+  mpl::set<NonTerminal> new_non_terminals =
+    cast<mpl::set<NonTerminal>>(
+      mpl::copy_if(
+        produced_symbols,
+        lambda(Symbol) {
+          mpl::not_(
+            mpl::or_(
+              cast<mpl::set<Symbol>>(Tokens).has_key(_1),
+              cast<mpl::set<Symbol>>(all_nts).has_key(_1)
+            )
+          )
+        },
+        set_inserter(mpl::set0<Symbol>())
+      )
+    );
+  auto new_productions =
+    mpl::fold(
+      new_non_terminals,
+      mpl::set0<production_s>(),
+      lambda(mpl::set<production_s>, NonTerminal) {
+        insert_range(_1, get_intrinsic_productions(_2))
+      }
+    );
+  return make_grammar_stuff_helper(
+    new_productions.empty(),
+    Tokens,
+    all_nts,
+    new_productions,
+    mpl::joint_view(ProductionsProcessed, ProductionsToProcess)
+  );
+};
+
+metafunction mpl::pair<mpl::set<NonTerminal>, mpl::set<production_s>>
+make_non_terminals_and_productions(
+  mpl::set<Token> Tokens,
+  mpl::Sequence<production_s> Productions
+)
+{
+  return make_grammar_stuff_helper(
+    // Using mpl::not twice to turn a boost:: thing into an mpl:: thing
+    mpl::not_(mpl::not_(Productions.empty())),
+    Tokens,
+    mpl::set0<NonTerminal>(),
+    Productions,
+    mpl::vector0<production_s>()
+  );
+};
+
+}
+
 metatype grammar_base {
   constructor(
       NonTerminal r,
@@ -8,7 +95,10 @@ metatype grammar_base {
     ) :
     root(r),
     tokens(mpl::copy(t, set_inserter(mpl::set<Token>()))),
-    productions(mpl::copy(p, set_inserter(mpl::set<production_s>()))),
+    non_terminals_and_productions(
+      detail::make_non_terminals_and_productions(tokens, p)
+    ),
+    productions(non_terminals_and_productions.second()),
     production_index_vector(
       mpl::fold(
         productions,
@@ -27,13 +117,7 @@ metatype grammar_base {
         map_inserter(mpl::map0<production_s, mpl::IntegralConstant>())
       )
     ),
-    non_terminals(
-      mpl::transform(
-        productions,
-        lambda(production_s) { _1.get_source() },
-        set_inserter(mpl::set0<NonTerminal>())
-      )
-    ),
+    non_terminals(non_terminals_and_productions.first()),
     symbol_index_vector(
       mpl::fold(
         mpl::joint_view<Symbol>(tokens, non_terminals),
@@ -51,6 +135,8 @@ metatype grammar_base {
     );
 
   NonTerminal root;
+  mpl::pair<mpl::set<NonTerminal>, mpl::set<production_s>>
+    non_terminals_and_productions;
   mpl::set<Token> tokens;
   mpl::set<production_s> productions;
   mpl::vector<mpl::pair<production_s, mpl::IntegralConstant>>

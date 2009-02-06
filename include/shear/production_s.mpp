@@ -26,6 +26,7 @@ metatype production_s {
   mpl::vector<compiletime::argument_tag> argument_tags;
 
   compiletime::NonTerminal get_source() { return source; }
+  mpl::vector<compiletime::Symbol> get_produced() { return produced; }
 }
 
 }
