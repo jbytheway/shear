@@ -3,6 +3,7 @@ MPP_FILES := $(shell find . -name '*.mpp')
 # file in them
 MPP_DIRS := #$(sort $(dir $(MPP_FILES)))
 HPP_FILES := $(addsuffix .hpp,$(basename $(MPP_FILES)))
+META := $(top_srcdir)tools/Meta++.exe
 
 all: $(HPP_FILES)
 
