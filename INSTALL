@@ -1,0 +1,7 @@
+Build with 'make'.
+
+Some header files for shear are built with Meta++, a source-to-source compiler
+to aid with C++ template metaprogramming.  A copy is included in tools.  It
+requires a copy of mono to run.  With appropriate tweaks to the makefiles,
+another .NET framework should suffice.
+
