@@ -6,6 +6,7 @@
 #include <boost/scoped_ptr.hpp>
 
 #include <shear/make_grammar.hpp>
+#include <shear/discard.hpp>
 #include <shear/production.hpp>
 #include <shear/lalr/parser_from_grammar.hpp>
 

@@ -1,5 +1,5 @@
-#ifndef SHEAR__POINTER_HPP
-#define SHEAR__POINTER_HPP
+#ifndef SHEAR__REFERENCE_HPP
+#define SHEAR__REFERENCE_HPP
 
 #include <shear/argument_tags.hpp>
 #include <shear/compiletime/tagged_symbol.hpp>
@@ -7,24 +7,24 @@
 namespace shear {
 
 template<typename Symbol>
-struct pointer {
+struct reference {
 };
 
 namespace compiletime {
 
 template<typename TaggedSymbol>
-struct get_symbol<pointer<TaggedSymbol> > {
+struct get_symbol<reference<TaggedSymbol> > {
   typedef TaggedSymbol type;
 };
 
 template<typename TaggedSymbol>
-struct get_tag<pointer<TaggedSymbol>, void> {
-  typedef argument_tags::by_pointer type;
+struct get_tag<reference<TaggedSymbol>, void> {
+  typedef argument_tags::by_reference type;
 };
 
 }
 
 }
 
-#endif // SHEAR__POINTER_HPP
+#endif // SHEAR__REFERENCE_HPP
 

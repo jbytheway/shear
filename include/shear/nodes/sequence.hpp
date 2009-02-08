@@ -2,6 +2,7 @@
 #define SHEAR__NODES__SEQUENCE_HPP
 
 #include <shear/produced.hpp>
+#include <shear/pointer.hpp>
 
 namespace shear { namespace nodes {
 

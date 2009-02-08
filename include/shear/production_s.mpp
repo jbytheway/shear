@@ -17,13 +17,13 @@ metatype production_s {
       mpl::transform(
         produced_with_tags,
         lambda(compiletime::TaggedSymbol) { _1.get_tag() },
-        compiletime::vector_inserter<compiletime::argument_tag>()
+        compiletime::vector_inserter<ArgumentTag>()
       )
     ),
     ;
   compiletime::NonTerminal source;
   mpl::vector<compiletime::Symbol> produced;
-  mpl::vector<compiletime::argument_tag> argument_tags;
+  mpl::vector<ArgumentTag> argument_tags;
 
   compiletime::NonTerminal get_source() { return source; }
   mpl::vector<compiletime::Symbol> get_produced() { return produced; }

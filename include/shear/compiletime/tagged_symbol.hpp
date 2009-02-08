@@ -1,9 +1,7 @@
 #ifndef SHEAR__COMPILETIME__TAGGED_SYMBOL_HPP
 #define SHEAR__COMPILETIME__TAGGED_SYMBOL_HPP
 
-#include <shear/compiletime/argument_tag.hpp>
-#include <shear/discard.hpp>
-#include <shear/pointer.hpp>
+#include <shear/argument_tags.hpp>
 
 namespace shear { namespace compiletime {
 
@@ -12,29 +10,22 @@ struct get_symbol {
   typedef TaggedSymbol type;
 };
 
-template<typename TaggedSymbol>
-struct get_symbol<pointer<TaggedSymbol> > {
-  typedef TaggedSymbol type;
-};
-
-template<typename TaggedSymbol>
-struct get_symbol<discard<TaggedSymbol> > {
-  typedef TaggedSymbol type;
-};
-
-template<typename TaggedSymbol>
+template<typename TaggedSymbol, typename Enabler = void>
 struct get_tag {
-  typedef argument_by_reference type;
+  typedef argument_tags::by_reference type;
 };
 
 template<typename TaggedSymbol>
-struct get_tag<pointer<TaggedSymbol> > {
-  typedef argument_by_pointer type;
-};
-
-template<typename TaggedSymbol>
-struct get_tag<discard<TaggedSymbol> > {
-  typedef discard_argument type;
+struct get_tag<
+  TaggedSymbol,
+  typename boost::enable_if<
+    typename boost::is_same<
+      typename TaggedSymbol::shear_default_argument_tag,
+      typename TaggedSymbol::shear_default_argument_tag
+    >::type
+  >::type
+> {
+  typedef typename TaggedSymbol::shear_default_argument_tag type;
 };
 
 }}

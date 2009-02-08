@@ -1,0 +1,12 @@
+namespace shear {
+
+concept ArgumentTag {}
+
+namespace argument_tags {
+  extern "shear/argument_tags.hpp" ArgumentTag by_reference;
+  extern "shear/argument_tags.hpp" ArgumentTag by_pointer;
+  extern "shear/argument_tags.hpp" ArgumentTag discard;
+}
+
+}
+
