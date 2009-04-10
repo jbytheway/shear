@@ -4,6 +4,7 @@
 #include <boost/utility/enable_if.hpp>
 
 #include <shear/make_production.hpp>
+#include <shear/compiletime/true.hpp>
 
 namespace shear { namespace compiletime {
 
@@ -16,10 +17,7 @@ template<typename NonTerminal>
 struct get_intrinsic_productions<
   NonTerminal,
   typename boost::enable_if<
-    typename boost::is_same<
-      typename NonTerminal::shear_productions,
-      typename NonTerminal::shear_productions
-    >::type
+    typename true_<typename NonTerminal::shear_productions>::type
   >::type
 >{
   typedef typename mpl::fold<

@@ -1,0 +1,10 @@
+namespace shear::compiletime {
+
+// unary metafunction returning true
+metafunction mpl::bool_
+true_<typename T>(T) {
+  return mpl::true_;
+};
+
+}
+

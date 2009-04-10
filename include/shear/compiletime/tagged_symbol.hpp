@@ -2,6 +2,7 @@
 #define SHEAR__COMPILETIME__TAGGED_SYMBOL_HPP
 
 #include <shear/argument_tags.hpp>
+#include <shear/compiletime/true.hpp>
 
 namespace shear { namespace compiletime {
 
@@ -19,10 +20,7 @@ template<typename TaggedSymbol>
 struct get_tag<
   TaggedSymbol,
   typename boost::enable_if<
-    typename boost::is_same<
-      typename TaggedSymbol::shear_default_argument_tag,
-      typename TaggedSymbol::shear_default_argument_tag
-    >::type
+    typename true_<typename TaggedSymbol::shear_default_argument_tag>::type
   >::type
 > {
   typedef typename TaggedSymbol::shear_default_argument_tag type;
