@@ -1,7 +1,10 @@
 BIN = shear-test
-THIS_CPPFLAGS = -I$(top_srcdir)include
+THIS_CPPFLAGS = -I$(top_srcdir)include -DBOOST_MULTI_INDEX_ENABLE_SAFE_MODE
 LIBS = -lboost_unit_test_framework
 
 test-nonrecursive: $(BIN)
 	./$<
+
+valgrind: $(BIN)
+	valgrind --suppressions=suppressions ./$< --catch_system_errors=no
 
