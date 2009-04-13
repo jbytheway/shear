@@ -33,6 +33,7 @@ class nfa {
     };
 
     class state {
+      friend class nfa;
       public:
         typedef boost::shared_ptr<state> ptr;
 
@@ -55,10 +56,15 @@ class nfa {
           return transitions_;
         }
       private:
+        void clear_transitions() {
+          transitions_.clear();
+        }
+
         std::vector<transition::ptr> transitions_;
     };
 
     nfa(const state::ptr& start_state) : start_state_(start_state) {}
+    ~nfa();
 
     const state::ptr& start_state() const { return start_state_; }
   private:
@@ -102,6 +108,27 @@ class nfa {
 
 inline nfa::transition::~transition() {}
 inline nfa::state::~state() {}
+
+inline nfa::~nfa() {
+  // We have to disentangle the graph in order to avoid leaks caused by
+  // circular references
+  std::set<state::ptr> states;
+  std::queue<state::ptr> states_to_process;
+  states_to_process.push(start_state_);
+  states.insert(start_state_);
+
+  while (!states_to_process.empty()) {
+    state::ptr s = states_to_process.front();
+    states_to_process.pop();
+    BOOST_FOREACH(transition::ptr t, s->transitions()) {
+      state::ptr dest = t->destination();
+      if (states.insert(dest).second) {
+        states_to_process.push(dest);
+      }
+    }
+    s->clear_transitions();
+  }
+}
 
 }}
 
