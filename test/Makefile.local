@@ -5,6 +5,9 @@ LIBS = -lboost_unit_test_framework
 test-nonrecursive: $(BIN)
 	./$<
 
+gdb: $(BIN)
+	gdb --args ./$< --catch_system_errors=no
+
 valgrind: $(BIN)
-	valgrind --suppressions=suppressions ./$< --catch_system_errors=no
+	valgrind --suppressions=suppressions --num-callers=20 ./$< --catch_system_errors=no
 
