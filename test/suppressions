@@ -1,0 +1,15 @@
+{
+   Stuff in libld
+   Memcheck:Cond
+   obj:/lib/ld-2.9.so
+   obj:/lib/ld-2.9.so
+   obj:/lib/ld-2.9.so
+   obj:/lib/ld-2.9.so
+}
+{
+   Invalid read in unit_test shutdown
+   Memcheck:Addr4
+   fun:_ZN5boost9unit_test14framework_implD1Ev
+   fun:exit
+}
+
