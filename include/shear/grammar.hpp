@@ -127,7 +127,8 @@ grammar<R, T, P>::grammar()
             nt.productions()) {
           bool can_be_empty = true;
           BOOST_FOREACH(symbol_index_type i, production->produced()) {
-            if (!non_terminals_r_.find(i)->produces_empty()) {
+            NonTerminalMap::iterator it = non_terminals_r_.find(i);
+            if (it == non_terminals_r_.end() || !it->produces_empty()) {
               can_be_empty = false;
               break;
             }
