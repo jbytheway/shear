@@ -11,6 +11,7 @@ class item_state : public automata::nfa::state {
 
     // For the special production that does the outermost stuff
     item_state(size_t position) :
+      ultimate_position_(position == 1),
       penultimate_position_(position == 0),
       get_next_following_(false)
     {
