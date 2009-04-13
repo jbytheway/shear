@@ -178,13 +178,13 @@ void grammar<R, T, P>::check_for_loops() throw(grammar_loop_exception&)
           to_process.productions())
       {
         size_t min_length = 0;
-        const runtime::non_terminal* last_compulsory_symbol = NULL;
+        symbol_index_type last_compulsory_symbol = 0;
 
         BOOST_FOREACH(symbol_index_type symbol_index, production->produced()) {
           NonTerminalMap::iterator symbol = non_terminals_r_.find(symbol_index);
           if (symbol == non_terminals_r_.end() || !symbol->produces_empty())
           {
-            last_compulsory_symbol = &*symbol;
+            last_compulsory_symbol = symbol_index;
             ++min_length;
             if (min_length > 1)
               break;
@@ -206,11 +206,11 @@ void grammar<R, T, P>::check_for_loops() throw(grammar_loop_exception&)
             break;
           case 1:
             // Check for a loop
-            if (last_compulsory_symbol == &checking_non_terminal)
+            if (last_compulsory_symbol == checking_non_terminal.index())
               throw grammar_loop_exception(production);
             // Enqueue this for further processing
-            if (non_terminals_r_.count(last_compulsory_symbol->index()))
-              non_terminals_to_process.push(last_compulsory_symbol->index());
+            if (non_terminals_r_.count(last_compulsory_symbol))
+              non_terminals_to_process.push(last_compulsory_symbol);
             break;
           default:
             break;
